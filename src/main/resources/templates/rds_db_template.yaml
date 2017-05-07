@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  #Subnet Names
+  DBSubnet1Name:
+    Type: String
+    Description: Name of VPC to add RDS to
+  #Subnet Names
+  DBSubnet2Name:
+    Type: String
+    Description: Name of VPC to add RDS to
+  Tenant:
+    Type: String
+  #DB values
+  DBInstance:
+    Type: String
+    Default: dbinstance
+  DBName:
+    Type: String
+    Default: dmdb
+  DBMasterUser:
+    Type: String
+    Default: root
+  DBMasterPassword:
+    Type: String
+    Default: replaceMe
+  DBIsMultiZone:
+    Type: String
+    AllowedValues:
+    - true
+    - false
+    Default: false
+
+Resources:
+ ##
+ # MySQL RDS Definition
+ ##
+  RDSDBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: "DB Subnet Group."
+      SubnetIds:
+        - !ImportValue DBSubnet1Name
+        - !ImportValue DBSubnet2Name
+      Tags:
+        - Key: Name
+          Value: !Join [ "", ["RDSSNG", Ref: Tenant ] ]
+        - Key: Tenant
+          Value:
+            Ref: Tenant
+
+  RDSDEVDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      #
+      # Resource Definition
+      #
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.micro
+      BackupRetentionPeriod: 7
+      Engine: MySQL
+      DBInstanceIdentifier:
+        Ref: DBInstance
+      DBName:
+        Ref: DBName
+      #
+      # Stub Credentials
+      # will work on shifting to IAM user later
+      #
+      MasterUsername:
+        Ref: DBMasterUser
+      MasterUserPassword:
+        Ref: DBMasterPassword
+      #
+      # placement
+      #
+      PubliclyAccessible: false
+      MultiAZ:
+        Ref: DBIsMultiZone
+      DBSubnetGroupName:
+        Ref: RDSDBSubnetGroup
+      Tags:
+        - Key: Name
+          Value: !Join [ "", ["RDS", Ref: Tenant ] ]
+        - Key: Tenant
+          Value:
+            Ref: Tenant

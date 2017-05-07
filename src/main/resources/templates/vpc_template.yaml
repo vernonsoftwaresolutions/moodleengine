@@ -470,56 +470,9 @@ Resources:
         Value:
           !Join [ "", ["MCSN1", Ref: Tenant ] ]
 
-  RDSDBSubnetGroup:
-    Type: "AWS::RDS::DBSubnetGroup"
-    Properties:
-      DBSubnetGroupDescription: "DB Subnet Group."
-      SubnetIds:
-        - Ref: DBSubnet1
-        - Ref: DBSubnet2
-      Tags:
-        - Key: Name
-          Value: !Join [ "", ["RDSSNG", Ref: Tenant ] ]
-        - Key: Tenant
-          Value:
-            Ref: Tenant
-
-  RDSDEVDB:
-    Type: AWS::RDS::DBInstance
-    Properties:
-      #
-      # Resource Definition
-      #
-      AllocatedStorage: '5'
-      DBInstanceClass: db.t2.micro
-      BackupRetentionPeriod: 7
-      Engine: MySQL
-      DBInstanceIdentifier:
-        Ref: DBInstance
-      DBName:
-        Ref: DBName
-      #
-      # Stub Credentials
-      # will work on shifting to IAM user later
-      #
-      MasterUsername:
-        Ref: DBMasterUser
-      MasterUserPassword:
-        Ref: DBMasterPassword
-      #
-      # placement
-      #
-      PubliclyAccessible: false
-      MultiAZ:
-        Ref: DBIsMultiZone
-      DBSubnetGroupName:
-        Ref: RDSDBSubnetGroup
-      Tags:
-        - Key: Name
-          Value: !Join [ "", ["RDS", Ref: Tenant ] ]
-        - Key: Tenant
-          Value:
-            Ref: Tenant
+  ##
+  # EFS definition
+  ##
   MountTargetSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
@@ -572,6 +525,9 @@ Resources:
       SecurityGroups:
       - Ref: MountTargetSecurityGroup
 
+ ##
+ # Elastic Cache definition (Memcached)
+ ##
   ECSubnetGroup:
     Type: AWS::ElastiCache::SubnetGroup
     Properties:
@@ -611,4 +567,14 @@ Outputs:
     Description: Main VPC
     Value: !Ref VPC
     Export:
-      Name: !Join [ "", ["VPC", Ref: Tenant ] ]
+      Name: "VPC"
+  DBSubnet1:
+    Description: DBSubnet1 Id
+    Value: !Ref DBSubnet1
+    Export:
+      Name: !Join [ "", ["DBSubnet1", Ref: Tenant ] ]
+  DBSubnet2:
+    Description: DBSubnet2
+    Value: !Ref DBSubnet2
+    Export:
+      Name: !Join [ "", ["DBSubnet2", Ref: Tenant ] ]
