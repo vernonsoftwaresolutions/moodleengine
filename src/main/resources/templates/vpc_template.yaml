@@ -1,0 +1,614 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+  # Regional Map
+Mappings:
+  RegionMap:
+    us-east-1:
+      AZ1: us-east-1a
+      AZ2: us-east-1b
+      AZ3: us-east-1c
+    us-west-1:
+      AZ1: us-west-1a
+      AZ2: us-west-1b
+      AZ3: us-west-1c
+    us-west-2:
+      AZ1: us-west-2a
+      AZ2: us-west-2b
+      AZ3: us-west-2c
+
+Parameters:
+  #
+  VPCExists:
+    Type: String
+    AllowedValues:
+    - true
+    - false
+    Default: false
+  Tenant:
+    Type: String
+    Default: DEV
+    Description: Tenant name
+  CidrBlock:
+    Type: String
+    Default: 192.168.0.0/16
+  #WS cidrs
+  WSSN1Cidr:
+    Type: String
+    Default: 192.168.4.0/24
+  WSSN2Cidr:
+    Type: String
+    Default: 192.168.5.0/24
+  WSSN3Cidr:
+    Type: String
+    Default: 192.168.6.0/24
+  #APP cidrs
+  APPSN1Cidr:
+    Type: String
+    Default: 192.168.14.0/24
+  APPSN2Cidr:
+    Type: String
+    Default: 192.168.15.0/24
+  APPSN3Cidr:
+    Type: String
+    Default: 192.168.16.0/24
+  ##EFS cidrs
+  EFSN1Cidr:
+    Type: String
+    Default: 192.168.24.0/24
+  EFSN2Cidr:
+    Type: String
+    Default: 192.168.25.0/24
+  EFSN3Cidr:
+    Type: String
+    Default: 192.168.26.0/24
+  #DB cidrs
+  DBSN1Cidr:
+    Type: String
+    Default: 192.168.34.0/24
+  DBSN2Cidr:
+    Type: String
+    Default: 192.168.35.0/24
+  #MC cidrs
+  MCSN1Cidr:
+    Type: String
+    Default: 192.168.44.0/24
+  #DB values
+  DBInstance:
+    Type: String
+    Default: dbinstance
+  DBName:
+    Type: String
+    Default: dmdb
+  DBMasterUser:
+    Type: String
+    Default: root
+  DBMasterPassword:
+    Type: String
+    Default: replaceMe
+  DBIsMultiZone:
+    Type: String
+    AllowedValues:
+    - true
+    - false
+    Default: false
+
+Conditions:
+  vpcDoesNotExists: !Equals [ !Ref VPCExists, false ]
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: CidrBlock
+      Tags:
+      - Key: Name
+        Value:
+          Ref: Tenant
+  ##
+  # Internet GateWay
+  # Conditional:  Only create if VPC doesn't already exist
+  # The logic is a little backwards, could be reworked
+  ##
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Condition: vpcDoesNotExists
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          !Join [ "", ["IG", Ref: Tenant ] ]
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+
+  # attach the gateway
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Condition: vpcDoesNotExists
+    Properties:
+      VpcId:
+        Ref: VPC
+      InternetGatewayId:
+        Ref: InternetGateway
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value: MD_PVT_ROUTE
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["RTB", Ref: Tenant ] ]
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+      - Key: Name
+        Value:
+          !Join [ "", ["PRT", Ref: Tenant ] ]
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId:
+        Ref: PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: InternetGateway
+  ##
+  # Subnet route associations
+  ##
+
+  # WS routes
+  WSSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WSSubnet1
+      RouteTableId:
+        Ref: PublicRouteTable
+  WSSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WSSubnet2
+      RouteTableId:
+        Ref: PublicRouteTable
+  WSSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: WSSubnet3
+      RouteTableId:
+        Ref: PublicRouteTable
+  # App routes
+  APPSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: APPSubnet1
+      RouteTableId:
+        Ref: PrivateRouteTable
+  APPSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: APPSubnet2
+      RouteTableId:
+        Ref: PrivateRouteTable
+  APPSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: APPSubnet3
+      RouteTableId:
+        Ref: PrivateRouteTable
+  # DB routes
+  DBSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: DBSubnet1
+      RouteTableId:
+        Ref: PrivateRouteTable
+  DBSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: DBSubnet2
+      RouteTableId:
+        Ref: PrivateRouteTable
+  # EFS routes
+  EFSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: EFSubnet1
+      RouteTableId:
+        Ref: PrivateRouteTable
+  EFSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: EFSubnet2
+      RouteTableId:
+        Ref: PrivateRouteTable
+  EFSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: EFSubnet3
+      RouteTableId:
+        Ref: PrivateRouteTable
+  # EC routes
+  MCSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: MCSubnet1
+      RouteTableId:
+        Ref: PrivateRouteTable
+  ##
+  # Web Service Tier Subnets
+  ##
+  WSSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: WSSN1Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ1 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["WSSN1", Ref: Tenant ] ]
+  WSSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: WSSN2Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ2 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["WSSN2", Ref: Tenant ] ]
+  WSSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: WSSN3Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ3 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["WSSN3", Ref: Tenant ] ]
+  ##
+  # Application Tier Subnets
+  ##
+  APPSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: APPSN1Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ1 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["APPSN1", Ref: Tenant ] ]
+  APPSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: APPSN2Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ2 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["APPSN2", Ref: Tenant ] ]
+  APPSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: APPSN3Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ3 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["APPSN3", Ref: Tenant ] ]
+  ##
+  # Elastic File System Subnet definitions
+  ##
+  EFSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: EFSN1Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ1 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["EFSN1", Ref: Tenant ] ]
+  EFSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: EFSN2Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ2 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["EFSN2", Ref: Tenant ] ]
+  EFSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: EFSN3Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ3 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["EFSN3", Ref: Tenant ] ]
+  ##
+  # Database Subnet definitions
+  ##
+  DBSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: DBSN1Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ1 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["DBSN1", Ref: Tenant ] ]
+  DBSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: DBSN2Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ2 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["DBSN2", Ref: Tenant ] ]
+  ##
+  # Elastic Cache Subnet definitions
+  ##
+  MCSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: VPC
+      CidrBlock:
+        Ref: MCSN1Cidr
+      AvailabilityZone:
+        !FindInMap [ RegionMap, !Ref "AWS::Region", AZ1 ]
+      Tags:
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+      - Key: Name
+        Value:
+          !Join [ "", ["MCSN1", Ref: Tenant ] ]
+
+  RDSDBSubnetGroup:
+    Type: "AWS::RDS::DBSubnetGroup"
+    Properties:
+      DBSubnetGroupDescription: "DB Subnet Group."
+      SubnetIds:
+        - Ref: DBSubnet1
+        - Ref: DBSubnet2
+      Tags:
+        - Key: Name
+          Value: !Join [ "", ["RDSSNG", Ref: Tenant ] ]
+        - Key: Tenant
+          Value:
+            Ref: Tenant
+
+  RDSDEVDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      #
+      # Resource Definition
+      #
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.micro
+      BackupRetentionPeriod: 7
+      Engine: MySQL
+      DBInstanceIdentifier:
+        Ref: DBInstance
+      DBName:
+        Ref: DBName
+      #
+      # Stub Credentials
+      # will work on shifting to IAM user later
+      #
+      MasterUsername:
+        Ref: DBMasterUser
+      MasterUserPassword:
+        Ref: DBMasterPassword
+      #
+      # placement
+      #
+      PubliclyAccessible: false
+      MultiAZ:
+        Ref: DBIsMultiZone
+      DBSubnetGroupName:
+        Ref: RDSDBSubnetGroup
+      Tags:
+        - Key: Name
+          Value: !Join [ "", ["RDS", Ref: Tenant ] ]
+        - Key: Tenant
+          Value:
+            Ref: Tenant
+  MountTargetSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        VpcId:
+          Ref: VPC
+        GroupDescription: Security group for mount target
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '2049'
+          ToPort: '2049'
+          CidrIp: 0.0.0.0/0
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+      - Key: Name
+        Value: !Join [ "", ["EFS", Ref: Tenant ] ]
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+
+  MountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        Ref: EFSubnet1
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+
+  MountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        Ref: EFSubnet2
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+
+  MountTarget3:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        Ref: EFSubnet3
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+
+  ECSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Cache Subnet Group
+      SubnetIds:
+        - Ref: MCSubnet1
+
+  ElasticacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Elasticache Security Group
+      SecurityGroupIngress:
+        -
+          IpProtocol: "tcp"
+          FromPort: "11211"
+          ToPort: "11211"
+      VpcId:
+        Ref: VPC
+
+  ElasticacheCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      AutoMinorVersionUpgrade: true
+      Engine: memcached
+      CacheNodeType: cache.t2.micro
+      CacheSubnetGroupName:
+        Ref: ECSubnetGroup
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        -
+          Fn::GetAtt:
+            - "ElasticacheSecurityGroup"
+            - "GroupId"
+
+Outputs:
+  VPC:
+    Description: Main VPC
+    Value: !Ref VPC
+    Export:
+      Name: !Join [ "", ["VPC", Ref: Tenant ] ]
