@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  #VPC Name
+  VPCName:
+    Type: String
+    Description: Name of vpc to add EC to
+  #Subnet Names
+  MCSubnet1Name:
+    Type: String
+    Description: Name of Subnet to add EC to
+  Tenant:
+    Type: String
+    Description: Name of Moodle Tenant
+Resources:
+ ##
+ # Elastic Cache definition (Memcached)
+ ##
+  ECSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Cache Subnet Group
+      SubnetIds:
+        - !ImportValue
+          Ref: MCSubnet1Name
+
+  ElasticacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Elasticache Security Group
+      SecurityGroupIngress:
+        -
+          IpProtocol: "tcp"
+          FromPort: "11211"
+          ToPort: "11211"
+      VpcId:
+        !ImportValue
+          Ref: VPCName
+
+  ElasticacheCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      AutoMinorVersionUpgrade: true
+      Engine: memcached
+      CacheNodeType: cache.t2.micro
+      CacheSubnetGroupName:
+        Ref: ECSubnetGroup
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        -
+          Fn::GetAtt:
+            - "ElasticacheSecurityGroup"
+            - "GroupId"

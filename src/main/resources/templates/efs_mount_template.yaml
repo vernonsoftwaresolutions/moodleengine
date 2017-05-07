@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  #VPC Name
+  VPCName:
+    Type: String
+    Description: Name of vpc to add EFS to
+  #Subnet Names
+  EFSubnet1Name:
+    Type: String
+    Description: Name of Subnet to add EFS to
+  EFSubnet2Name:
+    Type: String
+    Description: Name of Subnet to add EFS to
+  EFSubnet3Name:
+    Type: String
+    Description: Name of Subnet to add EFS to
+  Tenant:
+    Type: String
+    Description: Name of Moodle Tenant
+Resources:
+
+  ##
+  # EFS definition
+  ##
+  MountTargetSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        VpcId:
+          !ImportValue
+            Ref: VPCName
+        GroupDescription: Security group for mount target
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '2049'
+          ToPort: '2049'
+          CidrIp: 0.0.0.0/0
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      PerformanceMode: generalPurpose
+      FileSystemTags:
+      - Key: Name
+        Value: !Join [ "", ["EFS", Ref: Tenant ] ]
+      - Key: Tenant
+        Value:
+          Ref: Tenant
+
+  MountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        !ImportValue
+          Ref: EFSubnet1Name
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+
+  MountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        !ImportValue
+          Ref: EFSubnet2Name
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
+
+  MountTarget3:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId:
+        Ref: FileSystem
+      SubnetId:
+        !ImportValue
+          Ref: EFSubnet3Name
+      SecurityGroups:
+      - Ref: MountTargetSecurityGroup
