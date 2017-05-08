@@ -10,9 +10,16 @@ import java.nio.file.Paths;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.moodle.cloudengine.stack.builder.ECRequestBuilder;
+import com.moodle.cloudengine.stack.builder.EFSRequestBuilder;
+import com.moodle.cloudengine.stack.builder.RDSRequestBuilder;
+import com.moodle.cloudengine.stack.builder.VPCRequestBuilder;
+import com.moodle.cloudengine.template.Template;
+import com.moodle.cloudengine.template.model.Templates;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -22,20 +29,43 @@ import java.util.stream.Stream;
 public class TemplateReader {
 
     private static final Logger log = Logger.getLogger(TemplateReader.class);
-    private ObjectMapper objectMapper;
+
+    private static final String EC_TEMPLATE = "ec_memcached_template.yaml";
+    private static final String EFS_TEMPLATE = "efs_mount_template.yaml";
+    private static final String RDS_TEMPLATE = "rds_db_template.yaml";
+    private static final String VPC_TEMPLATE = "vpc_template.yaml";
 
     /**
      * Method to read in file and retrun as string
-     * @param file
      * @return
      * @throws IOException
      * @throws URISyntaxException
      */
-    public String getFileAsString(String file) throws IOException, URISyntaxException, RuntimeException {
+    public String getFileAsString(Optional<Templates> template) throws IOException, URISyntaxException, RuntimeException {
+        String fileName = null;
+        if (!template.isPresent()) {
+            throw new IllegalArgumentException("\"Cannot match template type \"");
+        }
+
+        switch (template.get()){
+            case VPC:
+                fileName = VPC_TEMPLATE;
+                break;
+            case RDS:
+                fileName = RDS_TEMPLATE;
+                break;
+            case EFS:
+                fileName = EFS_TEMPLATE;
+                break;
+            case EC:
+                fileName = EC_TEMPLATE;
+                break;
+            default:
+                throw new IllegalArgumentException("Cannot match template type ");
+        }
         URL url = getClass().getClassLoader()
-                .getResource(file);
+                .getResource(fileName);
         if(url == null){
-            //todo- I want to use InvalidArgumentException but gradle is telling me it can't find the dependency?
             //I thought it was shipped with core java.....
             throw new IllegalArgumentException("File does not exist");
 

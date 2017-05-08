@@ -1,21 +1,17 @@
 package com.moodle.cloudengine.file;
 
-import com.moodle.cloudengine.template.model.Template;
+import com.moodle.cloudengine.template.model.Templates;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.util.Optional;
+
 
 /**
  * Created by andrewlarsen on 5/7/17.
  */
 public class TemplateReaderTest {
     private TemplateReader reader;
-    private String fileName = "vpc_template.yaml";
-    private String secondFileName = "rds_db_template.yaml";
-
-    private String badFileName = "emailtemplateasdfasdf.html";
 
     @Before
     public void setup(){
@@ -23,17 +19,17 @@ public class TemplateReaderTest {
     }
     @Test
     public void testGetFileString() throws Exception {
-        String file = reader.getFileAsString(fileName);
+        String file = reader.getFileAsString(Optional.of(Templates.VPC));
         assert file.contains(" Type: AWS::EC2::RouteTable");
     }
     @Test
     public void testGetFile2String() throws Exception {
-        String file = reader.getFileAsString(secondFileName);
+        String file = reader.getFileAsString(Optional.of(Templates.RDS));
         assert file.contains("Type: AWS::RDS::DBInstance\n");
     }
     @Test(expected = IllegalArgumentException.class)
     public void testGetBadFileString() throws Exception {
-        String file = reader.getFileAsString(badFileName);
+        String file = reader.getFileAsString(Optional.ofNullable(null));
     }
 
 //    @Test
