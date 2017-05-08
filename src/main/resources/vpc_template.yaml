@@ -1,7 +1,7 @@
-AWSTemplateFormatVersion: '2010-09-09'
+awstemplateFormatVersion: 2010-09-09
 
   # Regional Map
-Mappings:
+mappings:
   RegionMap:
     us-east-1:
       AZ1: us-east-1a
@@ -16,7 +16,7 @@ Mappings:
       AZ2: us-west-2b
       AZ3: us-west-2c
 
-Parameters:
+parameters:
   #
   VPCExists:
     Type: String
@@ -73,10 +73,8 @@ Parameters:
     Type: String
     Default: 192.168.44.0/24
 
-Conditions:
-  vpcDoesNotExists: !Equals [ !Ref VPCExists, false ]
 
-Resources:
+resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -93,7 +91,6 @@ Resources:
   ##
   InternetGateway:
     Type: AWS::EC2::InternetGateway
-    Condition: vpcDoesNotExists
     Properties:
       Tags:
       - Key: Name
@@ -106,7 +103,6 @@ Resources:
   # attach the gateway
   AttachGateway:
     Type: AWS::EC2::VPCGatewayAttachment
-    Condition: vpcDoesNotExists
     Properties:
       VpcId:
         Ref: VPC
@@ -451,7 +447,7 @@ Resources:
         Value:
           !Join [ "", ["MCSN1", Ref: Tenant ] ]
 
-Outputs:
+outputs:
   VPC:
     Description: Main VPC
     Value: !Ref VPC
