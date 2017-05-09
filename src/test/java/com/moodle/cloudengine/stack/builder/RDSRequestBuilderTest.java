@@ -1,8 +1,7 @@
 package com.moodle.cloudengine.stack.builder;
 
 import com.amazonaws.services.cloudformation.model.CreateStackRequest;
-import com.amazonaws.services.cloudformation.model.Parameter;
-import com.moodle.cloudengine.stack.request.EFSRequest;
+import com.moodle.cloudengine.stack.request.RDSRequest;
 import com.moodle.cloudengine.template.model.Templates;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,63 +12,67 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
 /**
- * Created by andrewlarsen on 5/7/17.
+ * Created by andrewlarsen on 5/8/17.
  */
-public class EFSRequestBuilderTest {
-    EFSRequestBuilder requestBuilder;
-    EFSRequest request;
+public class RDSRequestBuilderTest {
+    RDSRequestBuilder requestBuilder;
+    RDSRequest request;
     @Before
     public void setup(){
-        request = new EFSRequest();
-        request.setVPCName("VPC");
+        request = new RDSRequest();
         request.setTemplateBody("BODY");
         request.setTenant("TENANT");
-        request.setTemplates(Templates.EFS);
-        request.setEFSubnet1Name("EFS1");
-        request.setEFSubnet2Name("EFS2");
-        request.setEFSubnet3Name("EFS3");
-        requestBuilder = new EFSRequestBuilder(request);
+        request.setTemplates(Templates.RDS);
+        request.setDBSubnet1Name("Sub1");
+        request.setDBSubnet2Name("Sub2");
+        request.setDBInstance("DBInst");
+        request.setDBName("DBName");
+        request.setDBMasterUser("DBMasterUser");
+        request.setDBMasterPassword("DBMasterPassword");
+        request.setDBIsMultiZone("DBIsMultiZone");
+
+        requestBuilder = new RDSRequestBuilder(request);
 
     }
     @Test
     public void createParameters() throws Exception {
-       CreateStackRequest req =  requestBuilder.build();
-       assertThat(req.getStackName(), is("TENANT-vpc"));
-       assertThat(req.getTemplateBody(), is(request.getTemplateBody()));
+        CreateStackRequest req =  requestBuilder.build();
+        assertThat(req.getStackName(), is("TENANT-vpc"));
+        assertThat(req.getTemplateBody(), is(request.getTemplateBody()));
     }
 
     @Test
-    public void testCreateEFS1(){
+    public void testCreateDBS1(){
         CreateStackRequest req =  requestBuilder.build();
         Optional parameter = req.getParameters().stream().filter(para -> {
-            return para.getParameterValue().equals(request.getEFSubnet1Name());
+            return para.getParameterValue().equals(request.getDBSubnet1Name());
         }).findFirst();
 
         assert parameter.isPresent();
     }
     @Test
-    public void testCreateEFS2(){
+    public void testCreateDBS2(){
         CreateStackRequest req =  requestBuilder.build();
         Optional parameter = req.getParameters().stream().filter(para -> {
-            return para.getParameterValue().equals(request.getEFSubnet2Name());
+            return para.getParameterValue().equals(request.getDBSubnet2Name());
         }).findFirst();
 
         assert parameter.isPresent();
     }
     @Test
-    public void testCreateEFS3(){
+    public void testCreateDBInstance(){
         CreateStackRequest req =  requestBuilder.build();
         Optional parameter = req.getParameters().stream().filter(para -> {
-            return para.getParameterValue().equals(request.getEFSubnet3Name());
+            return para.getParameterValue().equals(request.getDBInstance());
         }).findFirst();
 
         assert parameter.isPresent();
     }
     @Test
-    public void testCreateVPC(){
+    public void testCreateDBName(){
         CreateStackRequest req =  requestBuilder.build();
         Optional parameter = req.getParameters().stream().filter(para -> {
-            return para.getParameterValue().equals(request.getVPCName());
+            return para.getParameterValue().equals(request.getDBName());
         }).findFirst();
 
         assert parameter.isPresent();
@@ -77,19 +80,19 @@ public class EFSRequestBuilderTest {
 
     //names
     @Test
-    public void testCreateEFS1Name(){
+    public void testCreateDBMaster(){
         CreateStackRequest req =  requestBuilder.build();
         Optional parameter = req.getParameters().stream().filter(para -> {
-            return para.getParameterKey().equals("EFSubnet1Name");
+            return para.getParameterKey().equals(request.getDBMasterPassword());
         }).findFirst();
 
         assert parameter.isPresent();
     }
     @Test
-    public void testCreateEFS2Name(){
+    public void testCreateDBUser(){
         CreateStackRequest req =  requestBuilder.build();
         Optional parameter = req.getParameters().stream().filter(para -> {
-            return para.getParameterKey().equals("EFSubnet2Name");
+            return para.getParameterKey().equals(request.getDBMasterUser());
         }).findFirst();
 
         assert parameter.isPresent();
@@ -104,10 +107,10 @@ public class EFSRequestBuilderTest {
         assert parameter.isPresent();
     }
     @Test
-    public void testCreateVPCName(){
+    public void testCreateDBMultiZOne(){
         CreateStackRequest req =  requestBuilder.build();
         Optional parameter = req.getParameters().stream().filter(para -> {
-            return para.getParameterKey().equals("VPCName");
+            return para.getParameterKey().equals(request.getDBIsMultiZone());
         }).findFirst();
 
         assert parameter.isPresent();
