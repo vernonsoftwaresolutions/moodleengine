@@ -231,7 +231,7 @@ resources:
         Ref: EFSubnet3
       RouteTableId:
         Ref: PrivateRouteTable
-  # EC routes
+  # ElasticCache routes
   MCSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:

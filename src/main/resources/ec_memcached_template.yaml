@@ -4,11 +4,11 @@ Parameters:
   #VPC Name
   VPCName:
     Type: String
-    Description: Name of vpc to add EC to
+    Description: Name of vpc to add ElasticCache to
   #Subnet Names
   MCSubnet1Name:
     Type: String
-    Description: Name of Subnet to add EC to
+    Description: Name of Subnet to add ElasticCache to
   Tenant:
     Type: String
     Description: Name of Moodle Tenant

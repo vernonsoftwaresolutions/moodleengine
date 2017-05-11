@@ -32,8 +32,4 @@ public class TemplateReaderTest {
         String file = reader.getFileAsString(Optional.ofNullable(null));
     }
 
-//    @Test
-//    public void test() throws IOException, URISyntaxException {
-//        Template template = reader.getParameters(fileName);
-//    }
 }

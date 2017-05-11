@@ -8,13 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.moodle.cloudengine.stack.builder.ECRequestBuilder;
-import com.moodle.cloudengine.stack.builder.EFSRequestBuilder;
-import com.moodle.cloudengine.stack.builder.RDSRequestBuilder;
-import com.moodle.cloudengine.stack.builder.VPCRequestBuilder;
-import com.moodle.cloudengine.template.Template;
 import com.moodle.cloudengine.template.model.Templates;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Component;
@@ -36,7 +29,7 @@ public class TemplateReader {
     private static final String VPC_TEMPLATE = "vpc_template.yaml";
 
     /**
-     * Method to read in file and retrun as string
+     * Method to read in file and return as string
      * @return
      * @throws IOException
      * @throws URISyntaxException
