@@ -62,32 +62,32 @@ public class MoodleService {
                             .build();
         Stack vpcStack = template.buildStack(vpcMoodleStack);
         logger.info("VPC Stack Created");
-//        MoodleStack rdsMoodleStack = RDSBuilder.fromTemplateBody(reader.getFileAsString(Optional.of(Templates.RDS)))
-//                .isMultiAZ(true)
-//                .withDBCredentials("user", "passwordthats8")
-//                .withDBInstance("DBINSTANCE")
-//                .withDBName(tenant+"db")
-//                .withDBSubnetName("DBSubnet1" + tenant, "DBSubnet2" + tenant)
-//                .withTenant(tenant)
-//                .build();
-//
-//        Stack rdsStack = template.buildStack(rdsMoodleStack);
-//        logger.info("RDS Stack Created");
-//        MoodleStack efsMoodleStack = EFSBuilder.fromTemplateBody(reader.getFileAsString(Optional.of(Templates.EFS)))
-//                .withEFSSubnet("EFSubnet1" + tenant,
-//                        "EFSubnet2" + tenant, "EFSubnet3"+tenant)
-//                .withVPCName(VPC)
-//                .withTenant(tenant)
-//                .build();
-//        Stack efsStack = template.buildStack(efsMoodleStack);
-//        logger.info("EFS Stack Created");
-//        MoodleStack ecMoodleStack = ElasticCacheBuilder.fromTemplateBody(reader.getFileAsString(Optional.of(Templates.EC)))
-//                .withTenant(tenant)
-//                .withMCSubnet("MCSubnet1" + tenant)
-//                .withVPCName(VPC)
-//                .build();
-//
-//        Stack ecStack = template.buildStack(ecMoodleStack);
-//        logger.info("Elastic Cache Stack Created");
+        MoodleStack rdsMoodleStack = RDSBuilder.fromTemplateBody(reader.getFileAsString(Optional.of(Templates.RDS)))
+                .isMultiAZ(true)
+                .withDBCredentials("user", "passwordthats8")
+                .withDBInstance("DBINSTANCE")
+                .withDBName(tenant+"db")
+                .withDBSubnetName("DBSubnet1" + tenant, "DBSubnet2" + tenant)
+                .withTenant(tenant)
+                .build();
+
+        Stack rdsStack = template.buildStack(rdsMoodleStack);
+        logger.info("RDS Stack Created");
+        MoodleStack efsMoodleStack = EFSBuilder.fromTemplateBody(reader.getFileAsString(Optional.of(Templates.EFS)))
+                .withEFSSubnet("EFSubnet1" + tenant,
+                        "EFSubnet2" + tenant, "EFSubnet3"+tenant)
+                .withVPCName(VPC)
+                .withTenant(tenant)
+                .build();
+        Stack efsStack = template.buildStack(efsMoodleStack);
+        logger.info("EFS Stack Created");
+        MoodleStack ecMoodleStack = ElasticCacheBuilder.fromTemplateBody(reader.getFileAsString(Optional.of(Templates.EC)))
+                .withTenant(tenant)
+                .withMCSubnet("MCSubnet1" + tenant)
+                .withVPCName(VPC)
+                .build();
+
+        Stack ecStack = template.buildStack(ecMoodleStack);
+        logger.info("Elastic Cache Stack Created");
     }
 }
