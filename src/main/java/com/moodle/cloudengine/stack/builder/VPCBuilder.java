@@ -1,8 +1,9 @@
 package com.moodle.cloudengine.stack.builder;
 
 
-import com.moodle.cloudengine.stack.Stack;
+import com.moodle.cloudengine.stack.MoodleStack;
 import com.moodle.cloudengine.stack.VPC;
+import com.moodle.cloudengine.template.model.Templates;
 
 
 /**
@@ -12,14 +13,19 @@ public class VPCBuilder extends StackBuilder {
 
     private VPC vpc;
 
-    public VPCBuilder(String templateBody) {
-        VPC vpc = new VPC();
-        vpc.setTemplateBody(templateBody);
+    public VPCBuilder(VPC vpc) {
         this.vpc = vpc;
     }
 
+    public static VPCBuilder fromTemplateBody(String templateBody) {
+        VPC vpc = new VPC();
+        vpc.setTemplateBody(templateBody);
+        vpc.setTemplates(Templates.VPC);
+        return new VPCBuilder(vpc);
+    }
+
     @Override
-    public Stack build() {
+    public MoodleStack build() {
         return vpc;
     }
 
@@ -56,10 +62,9 @@ public class VPCBuilder extends StackBuilder {
     }
 
     public VPCBuilder withCidr(String cidr){
-        vpc.setCidr(createParameter("cidr", cidr));
+        vpc.setCidr(createParameter("CidrBlock", cidr));
         return this;
     }
-    @Override
     public StackBuilder withTenant(String tenant) {
         vpc.setTenant(createParameter("Tenant", tenant));
         return this;

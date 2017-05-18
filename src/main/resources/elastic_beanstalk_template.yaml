@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  #VPC Name
+  VPCName:
+    Type: String
+    Description: Name of vpc to add elasticbeanstalk to
+  Tenant:
+    Type: String
+    Description: Name of Moodle Tenant
+  MoodleBucket:
+    Type: String
+    Description: S3 bucket with moodle deployable
+  MoodleVersion:
+    Type: String
+    Description: Moodle Version Deployable
+  #App Subnet Names
+  APPSubnet1Name:
+    Type: String
+    Description: Name of Subnet to add Elastic Beanstalk to
+  APPSubnet2Name:
+    Type: String
+    Description: Name of Subnet to add Elastic Beanstalk to
+  APPSubnet3Name:
+    Type: String
+    Description: Name of Subnet to add Elastic Beanstalk to
+  #Web Subnet Names
+  WSSubnet1Name:
+    Type: String
+    Description: Name of Subnet to add Elastic Beanstalk to
+  WSSubnet2Name:
+    Type: String
+    Description: Name of Subnet to add Elastic Beanstalk to
+  WSSubnet3Name:
+    Type: String
+    Description: Name of Subnet to add Elastic Beanstalk to
+Resources:
+  ##
+  # Elastic Beanstalk Application Definition
+  ##
+  MoodleApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: Moodle Application
+      Description: Elastic Beanstalk Application
+  ##
+  # Initial Moodle Application Version
+  ##
+  MoodleAppVersion:
+    Type: AWS::ElasticBeanstalk::ApplicationVersion
+    Properties:
+      ApplicationName:
+        Ref: MoodleApplication
+      Description: Initial Moodle App Version
+      SourceBundle:
+        S3Bucket:
+          Fn::Join:
+            - "-"
+            -
+              - Ref: MoodleBucket
+              - Ref: "AWS::Region"
+        S3Key:
+          Ref: MoodleVersion
+  ##
+  # Moodle elastic beanstalk environment
+  ##
+  MoodleEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName:
+        Ref: MoodleApplication
+      Description: !Sub AWS Elastic Beanstalk Environment running ${Tenant}
+      EnvironmentName:
+        Ref: Tenant
+      SolutionStackName: "64bit Amazon Linux 2016.09 v2.5.2 running Docker 1.12.6"
+      OptionSettings:
+        -
+          Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: Value
+          Value: SomeKey
+        -
+          Namespace: aws:ec2:vpc
+          OptionName: VPCId
+          Value:
+            !ImportValue
+              Ref: VPCName
+        -
+          Namespace: aws:ec2:vpc
+          OptionName: Subnets
+          Value:
+            Fn::Join:
+              - ", "
+              -
+                - !ImportValue
+                    Ref: APPSubnet1Name
+                - !ImportValue
+                    Ref: APPSubnet2Name
+                - !ImportValue
+                    Ref: APPSubnet3Name
+        -
+          Namespace: aws:ec2:vpc
+          OptionName: ELBSubnets
+          Value:
+            Fn::Join:
+              - ", "
+              -
+                - !ImportValue
+                    Ref: WSSubnet1Name
+                - !ImportValue
+                    Ref: WSSubnet2Name
+                - !ImportValue
+                    Ref: WSSubnet3Name
+        -
+          Namespace: aws:ec2:vpc
+          OptionName: ELBScheme
+          Value: external
+        -
+          Namespace: aws:autoscaling:launchconfiguration
+          OptionName: InstanceType
+          Value: t2.micro
+        -
+          Namespace: aws:autoscaling:launchconfiguration
+          OptionName: ImageId
+          # todo-update to have region map
+          Value: ami-57dc2f41
+
+      Tags:
+      - Key: Name
+        Value:
+          Ref: Tenant
+      VersionLabel:
+        Ref: MoodleAppVersion

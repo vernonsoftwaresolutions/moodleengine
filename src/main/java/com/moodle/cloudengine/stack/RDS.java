@@ -3,10 +3,13 @@ package com.moodle.cloudengine.stack;
 
 import com.amazonaws.services.cloudformation.model.Parameter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by andrewlarsen on 5/7/17.
  */
-public class RDS extends Stack {
+public class RDS extends MoodleStack {
     
     private Parameter DBSubnet1Name;
     private Parameter DBSubnet2Name;
@@ -70,5 +73,19 @@ public class RDS extends Stack {
 
     public void setDBIsMultiZone(Parameter DBIsMultiZone) {
         this.DBIsMultiZone = DBIsMultiZone;
+    }
+
+    @Override
+    public List<Parameter> getParameters() {
+        List<Parameter> parameters = new ArrayList<>();
+        parameters.add(this.getDBInstance());
+        parameters.add(this.getDBIsMultiZone());
+        parameters.add(this.getDBMasterPassword());
+        parameters.add(this.getDBMasterUser());
+        parameters.add(this.getDBName());
+        parameters.add(this.getDBSubnet1Name());
+        parameters.add(this.getDBSubnet2Name());
+        parameters.add(this.getTenant());
+        return parameters;
     }
 }

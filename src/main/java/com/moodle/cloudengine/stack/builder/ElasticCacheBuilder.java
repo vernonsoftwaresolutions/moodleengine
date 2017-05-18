@@ -1,7 +1,8 @@
 package com.moodle.cloudengine.stack.builder;
 
 import com.moodle.cloudengine.stack.ElasticCache;
-import com.moodle.cloudengine.stack.Stack;
+import com.moodle.cloudengine.stack.MoodleStack;
+import com.moodle.cloudengine.template.model.Templates;
 
 
 /**
@@ -10,12 +11,18 @@ import com.moodle.cloudengine.stack.Stack;
 public class ElasticCacheBuilder extends StackBuilder {
 
     private ElasticCache elasticCache;
-    public ElasticCacheBuilder(String templateBody){
-        ElasticCache elasticCache = new ElasticCache();
-        elasticCache.setTemplateBody(templateBody);
+    public ElasticCacheBuilder(ElasticCache elasticCache){
         this.elasticCache = elasticCache;
     }
 
+    public static ElasticCacheBuilder fromTemplateBody(String templateBody){
+        ElasticCache elasticCache = new ElasticCache();
+        elasticCache.setTemplateBody(templateBody);
+        elasticCache.setTemplates(Templates.EC);
+
+        return new ElasticCacheBuilder(elasticCache);
+
+    }
     public ElasticCacheBuilder withVPCName(String vpcName){
         elasticCache.setVPCName(createParameter("VPCName", vpcName));
         return this;
@@ -26,14 +33,13 @@ public class ElasticCacheBuilder extends StackBuilder {
         return this;
 
     }
-    @Override
-    public StackBuilder withTenant(String tenant) {
+    public ElasticCacheBuilder withTenant(String tenant) {
         elasticCache.setTenant(createParameter("Tenant", tenant));
         return this;
     }
 
     @Override
-    public Stack build() {
+    public MoodleStack build() {
         return this.elasticCache;
     }
 }

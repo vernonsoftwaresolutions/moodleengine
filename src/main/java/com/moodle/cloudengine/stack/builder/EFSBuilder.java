@@ -1,7 +1,8 @@
 package com.moodle.cloudengine.stack.builder;
 
 import com.moodle.cloudengine.stack.EFS;
-import com.moodle.cloudengine.stack.Stack;
+import com.moodle.cloudengine.stack.MoodleStack;
+import com.moodle.cloudengine.template.model.Templates;
 
 
 /**
@@ -11,10 +12,15 @@ public class EFSBuilder extends StackBuilder {
 
     private EFS efs;
 
-    public EFSBuilder(String templateBody){
+    public EFSBuilder(EFS efs) {
+        this.efs = efs;
+    }
+
+    public static EFSBuilder fromTemplateBody(String templateBody){
         EFS efs = new EFS();
         efs.setTemplateBody(templateBody);
-        this.efs = efs;
+        efs.setTemplates(Templates.EFS);
+        return new EFSBuilder(efs);
     }
 
     public EFSBuilder withVPCName(String vpcName){
@@ -29,14 +35,13 @@ public class EFSBuilder extends StackBuilder {
         return this;
     }
 
-    @Override
-    public StackBuilder withTenant(String tenant) {
+    public EFSBuilder withTenant(String tenant) {
         efs.setTenant(createParameter("Tenant", tenant));
         return this;
     }
 
     @Override
-    public Stack build() {
+    public MoodleStack build() {
         return this.efs;
     }
 }

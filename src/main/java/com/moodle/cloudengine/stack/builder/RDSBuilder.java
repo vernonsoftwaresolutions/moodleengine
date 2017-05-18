@@ -1,7 +1,8 @@
 package com.moodle.cloudengine.stack.builder;
 
 import com.moodle.cloudengine.stack.RDS;
-import com.moodle.cloudengine.stack.Stack;
+import com.moodle.cloudengine.stack.MoodleStack;
+import com.moodle.cloudengine.template.model.Templates;
 
 
 /**
@@ -11,11 +12,16 @@ public class RDSBuilder extends StackBuilder {
 
     private RDS rds;
 
+    public RDSBuilder(RDS rds) {
+        this.rds = rds;
+    }
 
-    public RDSBuilder(String templateBody){
+    public static RDSBuilder fromTemplateBody(String templateBody){
         RDS rds = new RDS();
         rds.setTemplateBody(templateBody);
-        this.rds = rds;
+        rds.setTemplates(Templates.RDS);
+        return new RDSBuilder(rds);
+
     }
 
     public RDSBuilder withDBSubnetName(String dbSubnetName1, String dbSubnetName2){
@@ -44,14 +50,13 @@ public class RDSBuilder extends StackBuilder {
         rds.setDBIsMultiZone(createParameter("DBIsMultiZone", String.valueOf(isMultiAZ)));
         return this;
     }
-    @Override
-    public StackBuilder withTenant(String tenant) {
+    public RDSBuilder withTenant(String tenant) {
         rds.setTenant(createParameter("Tenant", tenant));
         return this;
     }
 
     @Override
-    public Stack build() {
+    public MoodleStack build() {
         return this.rds;
     }
 }

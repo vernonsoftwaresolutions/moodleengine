@@ -2,10 +2,13 @@ package com.moodle.cloudengine.stack;
 
 import com.amazonaws.services.cloudformation.model.Parameter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by andrewlarsen on 5/7/17.
  */
-public class VPC extends Stack {
+public class VPC extends MoodleStack {
     private Parameter cidr;
     private Parameter WSSN1Cidr;
     private Parameter WSSN2Cidr;
@@ -123,5 +126,25 @@ public class VPC extends Stack {
 
     public void setMCSN1Cidr(Parameter MCSN1Cidr) {
         this.MCSN1Cidr = MCSN1Cidr;
+    }
+
+    @Override
+    public List<Parameter> getParameters() {
+        List<Parameter> parameters = new ArrayList<>();
+        parameters.add(this.getAPPSN1Cidr());
+        parameters.add(this.getAPPSN2Cidr());
+        parameters.add(this.getAPPSN3Cidr());
+        parameters.add(this.getCidr());
+        parameters.add(this.getDBSN1Cidr());
+        parameters.add(this.getDBSN2Cidr());
+        parameters.add(this.getEFSN1Cidr());
+        parameters.add(this.getEFSN2Cidr());
+        parameters.add(this.getEFSN3Cidr());
+        parameters.add(this.getMCSN1Cidr());
+        parameters.add(this.getWSSN1Cidr());
+        parameters.add(this.getWSSN2Cidr());
+        parameters.add(this.getWSSN3Cidr());
+        parameters.add(this.getTenant());
+        return parameters;
     }
 }

@@ -3,10 +3,13 @@ package com.moodle.cloudengine.stack;
 
 import com.amazonaws.services.cloudformation.model.Parameter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by andrewlarsen on 5/7/17.
  */
-public class EFS extends Stack {
+public class EFS extends MoodleStack {
     private Parameter VPCName;
     private Parameter EFSubnet1Name;
     private Parameter EFSubnet2Name;
@@ -42,5 +45,16 @@ public class EFS extends Stack {
 
     public void setEFSubnet3Name(Parameter EFSubnet3Name) {
         this.EFSubnet3Name = EFSubnet3Name;
+    }
+
+    @Override
+    public List<Parameter> getParameters() {
+        List<Parameter> parameters = new ArrayList<>();
+        parameters.add(this.getEFSubnet1Name());
+        parameters.add(this.getEFSubnet2Name());
+        parameters.add(this.getEFSubnet3Name());
+        parameters.add(this.getVPCName());
+        parameters.add(this.getTenant());
+        return parameters;
     }
 }

@@ -11,19 +11,18 @@ import java.util.Optional;
 
 
 /**
- * Created by andrewlarsen on 5/7/17.
+ * Created by andrewlarsen on 5/10/17.
  */
 @Component
 public class StackBuilderFactory {
-
-    private static TemplateReader fileReader;
+    private TemplateReader fileReader;
 
 
     public StackBuilderFactory(TemplateReader fileReader) {
         this.fileReader = fileReader;
     }
 
-    public static StackBuilder getBuilder(Optional<Templates> template) throws IOException, URISyntaxException {
+    public StackBuilder getBuilder(Optional<Templates> template) throws IOException, URISyntaxException {
         String templateBody = fileReader.getFileAsString(template);
         StackBuilder builder = null;
         if(!template.isPresent()){
@@ -32,16 +31,16 @@ public class StackBuilderFactory {
         }
         switch (template.get()){
             case VPC:
-                builder = new VPCBuilder(templateBody);
+                builder = VPCBuilder.fromTemplateBody(templateBody);
                 break;
             case RDS:
-                builder = new RDSBuilder(templateBody);
+                builder = RDSBuilder.fromTemplateBody(templateBody);
                 break;
             case EFS:
-                builder = new EFSBuilder(templateBody);
+                builder = EFSBuilder.fromTemplateBody(templateBody);
                 break;
             case EC:
-                builder = new ElasticCacheBuilder(templateBody);
+                builder = ElasticCacheBuilder.fromTemplateBody(templateBody);
                 break;
             default:
                 throw new IllegalArgumentException("Cannot match template type to available stack builders");
