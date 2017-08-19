@@ -1,6 +1,7 @@
 package com.moodle.cloudengine.stack.builder;
 
 import com.moodle.cloudengine.stack.VPC;
+import com.moodle.cloudengine.template.model.Templates;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,13 +15,10 @@ public class VPCBuilderTest {
 
     private VPCBuilder vpcBuilder;
 
-    @Before
-    public void setup(){
-        vpcBuilder = new VPCBuilder("TEMPLATE");
-    }
     @Test
     public void withAPPCidr() throws Exception {
-        VPC vpc = (VPC) vpcBuilder
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
                 .withAPPCidr("1", "2", "3")
                 .build();
 
@@ -32,7 +30,8 @@ public class VPCBuilderTest {
 
     @Test
     public void withDBCidr() throws Exception {
-        VPC vpc = (VPC) vpcBuilder
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
                 .withDBCidr("1", "2")
                 .build();
 
@@ -42,7 +41,8 @@ public class VPCBuilderTest {
 
     @Test
     public void withEFSCidr() throws Exception {
-        VPC vpc = (VPC) vpcBuilder
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
                 .withEFSCidr("1", "2", "3")
                 .build();
 
@@ -53,7 +53,8 @@ public class VPCBuilderTest {
 
     @Test
     public void withMCCidr() throws Exception {
-        VPC vpc = (VPC) vpcBuilder
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
                 .withMCCidr("1")
                 .build();
 
@@ -63,7 +64,8 @@ public class VPCBuilderTest {
 
     @Test
     public void withWSCidr() throws Exception {
-        VPC vpc = (VPC) vpcBuilder
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
                 .withWSCidr("1", "2", "3")
                 .build();
 
@@ -74,7 +76,8 @@ public class VPCBuilderTest {
 
     @Test
     public void withCidr() throws Exception {
-        VPC vpc = (VPC) vpcBuilder
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
                 .withCidr("1")
                 .build();
 
@@ -83,11 +86,19 @@ public class VPCBuilderTest {
 
     @Test
     public void withTenant() throws Exception {
-        VPC vpc = (VPC) vpcBuilder
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
                 .withTenant("1")
                 .build();
 
         assertThat(vpc.getTenant().getParameterValue(), is("1"));
     }
+    @Test
+    public void withTemplates() throws Exception {
+        VPC vpc = (VPC) VPCBuilder
+                .fromTemplateBody("TEMPLATE")
+                .build();
 
+        assertThat(vpc.getTemplates(), is(Templates.VPC));
+    }
 }

@@ -14,6 +14,27 @@ Parameters:
   MoodleVersion:
     Type: String
     Description: Moodle Version Deployable
+  EBEC2Role:
+    Type: String
+    Description: Role assumed by Elastic Beanstalk EC2 instances
+  EBServiceRole:
+    Type: String 
+    Description: Role assuming by Elastic Beanstalk
+  #DB Credentials
+  DBUrl:
+    Type: String
+    Description: Url of database
+  DBName:
+    Type: String
+    Default: dmdb
+  DBMasterUser:
+    Type: String
+    NoEcho: true
+    Default: root
+  DBMasterPassword:
+    Type: String
+    NoEcho: true
+    Default: replaceMe
   #App Subnet Names
   APPSubnet1Name:
     Type: String
@@ -76,8 +97,38 @@ Resources:
       OptionSettings:
         -
           Namespace: aws:elasticbeanstalk:application:environment
-          OptionName: Value
-          Value: SomeKey
+          OptionName: DATABASENAME
+          Value:
+            Ref: DBName
+        -
+          Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: DATABASEURL
+          Value:
+            Ref: DBUrl
+        -
+          Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: DATABASEUSER
+          Value:
+            Ref: DBMasterUser
+        -
+          Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: DATABASEPASSWORD
+          Value:
+            Ref: DBMasterPassword
+        -
+          Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: EBURL
+          Value: !Sub ${Tenant}.${AWS::Region}.elasticbeanstalk.com
+        -
+          Namespace: aws:autoscaling:launchconfiguration
+          OptionName: IamInstanceProfile
+          Value:
+            Ref: EBEC2Role
+        -
+          Namespace: aws:elasticbeanstalk:environment
+          OptionName: ServiceRole
+          Value:
+            Ref: EBServiceRole
         -
           Namespace: aws:ec2:vpc
           OptionName: VPCId

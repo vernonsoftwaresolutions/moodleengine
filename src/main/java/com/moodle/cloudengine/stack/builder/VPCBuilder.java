@@ -25,7 +25,7 @@ public class VPCBuilder extends StackBuilder {
     }
 
     @Override
-    public MoodleStack build() {
+    public VPC build() {
         return vpc;
     }
 
@@ -65,10 +65,23 @@ public class VPCBuilder extends StackBuilder {
         vpc.setCidr(createParameter("CidrBlock", cidr));
         return this;
     }
+    public VPCBuilder withVPCName(String name){
+        vpc.setName(createParameter("VPCName",name));
+        return this;
+    }
+    public VPCBuilder withPrivateRouteTable(String table){
+        vpc.setPrivateRouteTable(createParameter("PrivateRouteTable", table));
+        return this;
+    }
+    public VPCBuilder withPublicRouteTable(String table){
+        vpc.setPublicRouteTable(createParameter("PublicRouteTable", table));
+        return this;
+    }
     public StackBuilder withTenant(String tenant) {
         vpc.setTenant(createParameter("Tenant", tenant));
         return this;
     }
+
 
     //todo-add validation
 

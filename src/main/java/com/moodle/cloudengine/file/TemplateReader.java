@@ -27,6 +27,8 @@ public class TemplateReader {
     private static final String EFS_TEMPLATE = "efs_mount_template.yaml";
     private static final String RDS_TEMPLATE = "rds_db_template.yaml";
     private static final String VPC_TEMPLATE = "vpc_template.yaml";
+    private static final String EB_TEMPLATE = "elastic_beanstalk_template.yaml";
+
 
     /**
      * Method to read in file and return as string
@@ -52,6 +54,9 @@ public class TemplateReader {
                 break;
             case EC:
                 fileName = EC_TEMPLATE;
+                break;
+            case EB:
+                fileName = EB_TEMPLATE;
                 break;
             default:
                 throw new IllegalArgumentException("Cannot match template type ");

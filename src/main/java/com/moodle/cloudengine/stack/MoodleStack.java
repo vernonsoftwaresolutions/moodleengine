@@ -13,7 +13,7 @@ public abstract class MoodleStack {
 
     private Templates templates;
     private String templateBody;
-    private Parameter tenant;
+    protected Parameter tenant;
 
     public String getStackName(){
         return this.getTemplates().getName() + this.getTenant().getParameterValue();

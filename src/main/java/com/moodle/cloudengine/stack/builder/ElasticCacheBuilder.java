@@ -39,7 +39,7 @@ public class ElasticCacheBuilder extends StackBuilder {
     }
 
     @Override
-    public MoodleStack build() {
+    public ElasticCache build() {
         return this.elasticCache;
     }
 }

@@ -1,6 +1,7 @@
 package com.moodle.cloudengine.stack.builder;
 
 import com.moodle.cloudengine.stack.ElasticCache;
+import com.moodle.cloudengine.template.model.Templates;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,14 +14,10 @@ import static org.junit.Assert.*;
 public class ElasticCacheBuilderTest {
 
     private ElasticCacheBuilder elasticCacheBuilder;
-
-    @Before
-    public void setup(){
-        elasticCacheBuilder = new ElasticCacheBuilder("TEMPLATEBODY");
-    }
     @Test
     public void withVPCName() throws Exception {
-        ElasticCache elasticCache = (ElasticCache) elasticCacheBuilder
+        ElasticCache elasticCache = (ElasticCache) ElasticCacheBuilder
+                .fromTemplateBody("tempalte")
                 .withVPCName("VPCNAME")
                 .build();
         assertThat(elasticCache.getVPCName().getParameterValue(), is("VPCNAME"));
@@ -28,10 +25,19 @@ public class ElasticCacheBuilderTest {
 
     @Test
     public void withMCSubnet() throws Exception {
-        ElasticCache elasticCache = (ElasticCache) elasticCacheBuilder
+        ElasticCache elasticCache = (ElasticCache) ElasticCacheBuilder
+                .fromTemplateBody("tempalte")
                 .withMCSubnet("MCSUBNET")
                 .build();
         assertThat(elasticCache.getMCSubnet1Name().getParameterValue(), is("MCSUBNET"));
+    }
+
+    @Test
+    public void withTemplates() throws Exception {
+        ElasticCache elasticCache = (ElasticCache) ElasticCacheBuilder
+                .fromTemplateBody("tempalte")
+                .build();
+        assertThat(elasticCache.getTemplates(), is(Templates.EC));
     }
 
 }

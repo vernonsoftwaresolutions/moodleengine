@@ -56,7 +56,7 @@ public class RDSBuilder extends StackBuilder {
     }
 
     @Override
-    public MoodleStack build() {
+    public RDS build() {
         return this.rds;
     }
 }

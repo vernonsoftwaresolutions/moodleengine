@@ -1,7 +1,7 @@
-awstemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: '2010-09-09'
 
   # Regional Map
-mappings:
+Mappings:
   RegionMap:
     us-east-1:
       AZ1: us-east-1a
@@ -16,14 +16,15 @@ mappings:
       AZ2: us-west-2b
       AZ3: us-west-2c
 
-parameters:
-  #
-  VPCExists:
+Parameters:
+  #VPC Name
+  VPCName:
     Type: String
-    AllowedValues:
-    - true
-    - false
-    Default: false
+    Description: Name of vpc to add ElasticCache to
+  PublicRouteTable:
+    Type: String
+  PrivateRouteTable:
+    Type: String
   Tenant:
     Type: String
     Default: DEV
@@ -74,81 +75,9 @@ parameters:
     Default: 192.168.44.0/24
 
 
-resources:
-  VPC:
-    Type: AWS::EC2::VPC
-    Properties:
-      CidrBlock:
-        Ref: CidrBlock
-      Tags:
-      - Key: Name
-        Value:
-          Ref: Tenant
-  ##
-  # Internet GateWay
-  # Conditional:  Only create if VPC doesn't already exist
-  # The logic is a little backwards, could be reworked
-  ##
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-      - Key: Name
-        Value:
-          !Join [ "", ["IG", Ref: Tenant ] ]
-      - Key: Tenant
-        Value:
-          Ref: Tenant
-
-  # attach the gateway
-  AttachGateway:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId:
-        Ref: VPC
-      InternetGatewayId:
-        Ref: InternetGateway
-
-  PrivateRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId:
-        Ref: VPC
-      Tags:
-      - Key: Name
-        Value: MD_PVT_ROUTE
-      - Key: Tenant
-        Value:
-          Ref: Tenant
-      - Key: Name
-        Value:
-          !Join [ "", ["RTB", Ref: Tenant ] ]
-
-  PublicRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId:
-        Ref: VPC
-      Tags:
-      - Key: Name
-        Value:
-          !Join [ "", ["PRT", Ref: Tenant ] ]
-      - Key: Tenant
-        Value:
-          Ref: Tenant
-
-  PublicRoute:
-    Type: AWS::EC2::Route
-    DependsOn: AttachGateway
-    Properties:
-      RouteTableId:
-        Ref: PublicRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId:
-        Ref: InternetGateway
+Resources:
   ##
   # Subnet route associations
-  ##
 
   # WS routes
   WSSubnet1RouteTableAssociation:
@@ -157,21 +86,24 @@ resources:
       SubnetId:
         Ref: WSSubnet1
       RouteTableId:
-        Ref: PublicRouteTable
+        !ImportValue
+              Ref: PublicRouteTable
   WSSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: WSSubnet2
       RouteTableId:
-        Ref: PublicRouteTable
+        !ImportValue
+              Ref: PublicRouteTable
   WSSubnet3RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: WSSubnet3
       RouteTableId:
-        Ref: PublicRouteTable
+        !ImportValue
+              Ref: PublicRouteTable
   # App routes
   APPSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -179,21 +111,24 @@ resources:
       SubnetId:
         Ref: APPSubnet1
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   APPSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: APPSubnet2
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   APPSubnet3RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: APPSubnet3
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   # DB routes
   DBSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -201,14 +136,16 @@ resources:
       SubnetId:
         Ref: DBSubnet1
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   DBSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: DBSubnet2
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   # EFS routes
   EFSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -216,21 +153,24 @@ resources:
       SubnetId:
         Ref: EFSubnet1
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   EFSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: EFSubnet2
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   EFSubnet3RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       SubnetId:
         Ref: EFSubnet3
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
   # ElasticCache routes
   MCSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -238,19 +178,23 @@ resources:
       SubnetId:
         Ref: MCSubnet1
       RouteTableId:
-        Ref: PrivateRouteTable
+        !ImportValue
+              Ref: PrivateRouteTable
+
   ##
-  # Web Service Tier Subnets
+  # Web Tier Subnets
   ##
   WSSubnet1:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: WSSN1Cidr
       AvailabilityZone:
         !FindInMap [ RegionMap, !Ref "AWS::Region", AZ1 ]
+      MapPublicIpOnLaunch: true
       Tags:
       - Key: Tenant
         Value:
@@ -262,11 +206,13 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: WSSN2Cidr
       AvailabilityZone:
         !FindInMap [ RegionMap, !Ref "AWS::Region", AZ2 ]
+      MapPublicIpOnLaunch: true
       Tags:
       - Key: Tenant
         Value:
@@ -278,11 +224,13 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: WSSN3Cidr
       AvailabilityZone:
         !FindInMap [ RegionMap, !Ref "AWS::Region", AZ3 ]
+      MapPublicIpOnLaunch: true
       Tags:
       - Key: Tenant
         Value:
@@ -297,7 +245,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: APPSN1Cidr
       AvailabilityZone:
@@ -313,7 +262,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: APPSN2Cidr
       AvailabilityZone:
@@ -329,7 +279,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: APPSN3Cidr
       AvailabilityZone:
@@ -348,7 +299,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: EFSN1Cidr
       AvailabilityZone:
@@ -364,7 +316,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: EFSN2Cidr
       AvailabilityZone:
@@ -380,7 +333,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: EFSN3Cidr
       AvailabilityZone:
@@ -399,7 +353,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: DBSN1Cidr
       AvailabilityZone:
@@ -415,7 +370,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: DBSN2Cidr
       AvailabilityZone:
@@ -434,7 +390,8 @@ resources:
     Type: AWS::EC2::Subnet
     Properties:
       VpcId:
-        Ref: VPC
+        !ImportValue
+          Ref: VPCName
       CidrBlock:
         Ref: MCSN1Cidr
       AvailabilityZone:
@@ -447,12 +404,7 @@ resources:
         Value:
           !Join [ "", ["MCSN1", Ref: Tenant ] ]
 
-outputs:
-  VPC:
-    Description: Main VPC
-    Value: !Ref VPC
-    Export:
-      Name: "VPC"
+Outputs:
   DBSubnet1:
     Description: DBSubnet1 Id
     Value: !Ref DBSubnet1
@@ -483,4 +435,33 @@ outputs:
     Value: !Ref MCSubnet1
     Export:
       Name: !Join [ "", ["MCSubnet1", Ref: Tenant ] ]
-
+  APPSubnet1:
+    Description: APPSubnet1 Id
+    Value: !Ref APPSubnet1
+    Export:
+      Name: !Join [ "", ["APPSubnet1", Ref: Tenant ] ]
+  APPSubnet2:
+    Description: APPSubnet2 Id
+    Value: !Ref APPSubnet2
+    Export:
+      Name: !Join [ "", ["APPSubnet2", Ref: Tenant ] ]
+  APPSubnet3:
+    Description: APPSubnet3 Id
+    Value: !Ref APPSubnet3
+    Export:
+      Name: !Join [ "", ["APPSubnet3", Ref: Tenant ] ]
+  WSSubnet1:
+    Description: WSSubnet1 Id
+    Value: !Ref WSSubnet1
+    Export:
+      Name: !Join [ "", ["WSSubnet1", Ref: Tenant ] ]
+  WSSubnet2:
+    Description: WSSubnet2 Id
+    Value: !Ref WSSubnet2
+    Export:
+      Name: !Join [ "", ["WSSubnet2", Ref: Tenant ] ]
+  WSSubnet3:
+    Description: WSSubnet3 Id
+    Value: !Ref WSSubnet3
+    Export:
+      Name: !Join [ "", ["WSSubnet3", Ref: Tenant ] ]

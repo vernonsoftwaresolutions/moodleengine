@@ -41,7 +41,7 @@ public class EFSBuilder extends StackBuilder {
     }
 
     @Override
-    public MoodleStack build() {
+    public EFS build() {
         return this.efs;
     }
 }

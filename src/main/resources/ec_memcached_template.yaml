@@ -51,3 +51,12 @@ Resources:
           Fn::GetAtt:
             - "ElasticacheSecurityGroup"
             - "GroupId"
+
+
+Outputs:
+  CacheEndpoint:
+    Description: Endpoint for memcached instance
+    Value: !GetAtt ElasticacheCluster.ConfigurationEndpoint.Address
+  CachePort:
+    Description: Endpoint for memcached instance
+    Value: !GetAtt ElasticacheCluster.ConfigurationEndpoint.Port

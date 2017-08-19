@@ -9,6 +9,10 @@ import java.util.List;
  * Created by andrewlarsen on 5/7/17.
  */
 public class VPC extends MoodleStack {
+
+    private Parameter name;
+    private Parameter publicRouteTable;
+    private Parameter privateRouteTable;
     private Parameter cidr;
     private Parameter WSSN1Cidr;
     private Parameter WSSN2Cidr;
@@ -128,9 +132,35 @@ public class VPC extends MoodleStack {
         this.MCSN1Cidr = MCSN1Cidr;
     }
 
+    public Parameter getName() {
+        return name;
+    }
+
+    public void setName(Parameter name) {
+        this.name = name;
+    }
+
+    public Parameter getPublicRouteTable() {
+        return publicRouteTable;
+    }
+
+    public void setPublicRouteTable(Parameter publicRouteTable) {
+        this.publicRouteTable = publicRouteTable;
+    }
+
+    public Parameter getPrivateRouteTable() {
+        return privateRouteTable;
+    }
+
+    public void setPrivateRouteTable(Parameter privateRouteTable) {
+        this.privateRouteTable = privateRouteTable;
+    }
+
     @Override
     public List<Parameter> getParameters() {
         List<Parameter> parameters = new ArrayList<>();
+        parameters.add(this.getPrivateRouteTable());
+        parameters.add(this.getPublicRouteTable());
         parameters.add(this.getAPPSN1Cidr());
         parameters.add(this.getAPPSN2Cidr());
         parameters.add(this.getAPPSN3Cidr());
@@ -145,6 +175,7 @@ public class VPC extends MoodleStack {
         parameters.add(this.getWSSN2Cidr());
         parameters.add(this.getWSSN3Cidr());
         parameters.add(this.getTenant());
+        parameters.add(this.getName());
         return parameters;
     }
 }

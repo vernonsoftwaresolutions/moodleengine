@@ -9,7 +9,8 @@ public enum Templates {
     VPC("vpc"),
     EFS("efs"),
     RDS("rds"),
-    EC("ec");
+    EC("ec"),
+    EB("ebs");
 
     private String name;
 

@@ -30,7 +30,7 @@ public class Template {
      * @throws URISyntaxException
      */
     public Stack buildStack(MoodleStack moodleStack)
-            throws Exception {
+            throws MoodleStackException, InterruptedException {
         String stackName =  moodleStack.getStackName();
         logger.debug("About to create stack with name ", stackName);
         CreateStackRequest stackRequest = new CreateStackRequest()
@@ -39,6 +39,7 @@ public class Template {
                 .withParameters(moodleStack.getParameters())
                 .withTemplateBody(moodleStack.getTemplateBody());
 
+        //todo-if exists update?
         CreateStackResult result = this.cloudFormation.createStack(stackRequest);
 
         DescribeStacksResult status;
